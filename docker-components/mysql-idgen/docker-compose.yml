@@ -1,0 +1,41 @@
+version: "2"
+services:
+
+  mysql-node1:
+    container_name: mysql-node1
+    image: mysql:5.7.24
+    volumes:
+      - ./node1.cnf:/etc/mysql/conf.d/my.cnf
+    environment:
+      - MYSQL_ROOT_PASSWORD=wits
+      - MYSQL_DATABASE=wits_plusx_db
+      - MYSQL_USER=wits
+      - MYSQL_PASSWORD=wits
+    ports:
+      - "13061:3306"
+
+  mysql-node2:
+    container_name: mysql-node2
+    image: mysql:5.7.24
+    volumes:
+      - ./node2.cnf:/etc/mysql/conf.d/my.cnf
+    environment:
+      - MYSQL_ROOT_PASSWORD=wits
+      - MYSQL_DATABASE=wits_plusx_db
+      - MYSQL_USER=wits
+      - MYSQL_PASSWORD=wits
+    ports:
+      - "13062:3306"
+
+  mysql-node3:
+    container_name: mysql-node3
+    image: mysql:5.7.24
+    volumes:
+      - ./node2.cnf:/etc/mysql/conf.d/my.cnf
+    environment:
+      - MYSQL_ROOT_PASSWORD=wits
+      - MYSQL_DATABASE=wits_plusx_db
+      - MYSQL_USER=wits
+      - MYSQL_PASSWORD=wits
+    ports:
+      - "13063:3306"

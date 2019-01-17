@@ -10,3 +10,7 @@ https://blog.csdn.net/u014044812/article/details/78929579
 
 https://github.com/liq05/kong-kong-dashboard-docker-compose
 https://github.com/gsenden/kong-konga-docker-compose
+
+docker mysql mha
+https://github.com/prontera/docker-mysql-mha
+

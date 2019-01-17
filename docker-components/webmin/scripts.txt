@@ -1,0 +1,1 @@
+docker run --name single-webmin-bind -d --restart=always -p 10053:53 -p 10000:10000 sameersbn/bind:latest

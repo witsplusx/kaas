@@ -1,0 +1,14 @@
+2019-01-17
+
+docker run --name single-webmin-bind -d --restart=always -p 10053:53 -p 10000:10000 sameersbn/bind:latest
+
+
+#基于mysql主键生成器
+cd /wits/BIGDS/witshine/kaas/docker-components/mysql-idgen
+
+docker-compose -f ./docker-compose.yml -p wits-glbidgen-mysql up -d
+
+docker-compose -f ./docker-compose.yml -p wits-glbidgen-mysql start
+docker-compose -f ./docker-compose.yml -p wits-glbidgen-mysql stop
+docker-compose -f ./docker-compose.yml -p wits-glbidgen-mysql down
+
