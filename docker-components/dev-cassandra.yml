@@ -1,0 +1,54 @@
+version: '3'
+
+services:
+  #cassandra cluster
+  witsdev-cassandra-1:
+    image: cassandra:3.11.1
+    container_name: witsdev-cassandra-1
+    environment:
+      - CASSANDRA_BROADCAST_ADDRESS=cassandra-1
+    ports:
+      - "27001:7000"
+    #restart: always
+
+  witsdev-cassandra-2:
+    image: cassandra:3.11.1
+    container_name: witsdev-cassandra-2
+    environment:
+      - CASSANDRA_BROADCAST_ADDRESS=witsdev-cassandra-2
+      - CASSANDRA_SEEDS=witsdev-cassandra-1
+    ports:
+      - "27002:7000"
+    depends_on:
+      - witsdev-cassandra-1
+    #restart: always
+
+  witsdev-cassandra-3:
+    image: cassandra:3.11.1
+    container_name: witsdev-cassandra-3
+    environment:
+      - CASSANDRA_BROADCAST_ADDRESS=witsdev-cassandra-3
+      - CASSANDRA_SEEDS=witsdev-cassandra-1
+    ports:
+      - "27003:7000"
+    depends_on:
+      - witsdev-cassandra-2
+    #restart: always
+
+  witsdev-cassandra-haproxy:
+      image: haproxy:latest
+      volumes:
+        - ./haproxy:/haproxy-override
+        - ./haproxy/haproxy-cassandra.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
+      restart: always
+      links:
+        - witsdev-cassandra-1
+        - witsdev-cassandra-2
+        - witsdev-cassandra-3
+      ports:
+        - "22881:12881"
+        - "27000:7000"
+      expose:
+        - "12881"
+        - "7000"
+      privileged: true

@@ -1,0 +1,77 @@
+version: '3'
+
+services:
+  # inner baksvr registry center
+  witsdev-hbase-master:
+    container_name: witsdev-hbase-master
+    hostname: witsdev-hbase-master
+    image: registry.cn-shenzhen.aliyuncs.com/xuybin/hbase
+    ports:
+      - 50070:50070
+      - 28080:8080
+      - 28088:8088
+      - 26010:16010
+    volumes:
+      - witsdev-hdfs-master:/hdfs
+    networks:
+      - witsdev-hbase
+    environment:
+      - BKMS=witsdev-hbase-slave1
+      - ZKS=witsdev-hbase-slave1,witsdev-hbase-slave2,witsdev-hbase-slave3
+      - SLAVES=witsdev-hbase-slave1,witsdev-hbase-slave2,witsdev-hbase-slave3
+
+  witsdev-hbase-slave1:
+    container_name: witsdev-hbase-slave1
+    hostname: witsdev-hbase-slave1
+    image: registry.cn-shenzhen.aliyuncs.com/xuybin/hbase
+    ports:
+      - 26031:16030
+      - 28421:8042
+    volumes:
+      - witsdev-hdfs-slave1:/hdfs
+    networks:
+      - witsdev-hbase
+    environment:
+      - BKMS=witsdev-hbase-slave1
+      - ZKS=witsdev-hbase-slave1,witsdev-hbase-slave2,witsdev-hbase-slave3
+      - SLAVES=witsdev-hbase-slave1,witsdev-hbase-slave2,witsdev-hbase-slave3
+
+  witsdev-hbase-slave2:
+    container_name: witsdev-hbase-slave2
+    hostname: witsdev-hbase-slave2
+    image: registry.cn-shenzhen.aliyuncs.com/xuybin/hbase
+    ports:
+      - 26032:16030
+      - 28422:8042
+    volumes:
+      - witsdev-hdfs-slave2:/hdfs
+    networks:
+      - witsdev-hbase
+    environment:
+      - BKMS=witsdev-hbase-slave1
+      - ZKS=witsdev-hbase-slave1,witsdev-hbase-slave2,witsdev-hbase-slave3
+      - SLAVES=witsdev-hbase-slave1,witsdev-hbase-slave2,witsdev-hbase-slave3
+
+  witsdev-hbase-slave3:
+    container_name: witsdev-hbase-slave3
+    hostname: witsdev-hbase-slave3
+    image: registry.cn-shenzhen.aliyuncs.com/xuybin/hbase
+    ports:
+      - 26033:16030
+      - 28423:8042
+    volumes:
+      - witsdev-hdfs-slave3:/hdfs
+    networks:
+      - witsdev-hbase
+    environment:
+      - BKMS=witsdev-hbase-slave1
+      - ZKS=witsdev-hbase-slave1,witsdev-hbase-slave2,witsdev-hbase-slave3
+      - SLAVES=witsdev-hbase-slave1,witsdev-hbase-slave2,witsdev-hbase-slave3
+networks:
+  witsdev-hbase:
+
+volumes:
+  witsdev-hdfs-master:
+  witsdev-hdfs-slave1:
+  witsdev-hdfs-slave2:
+  witsdev-hdfs-slave3:

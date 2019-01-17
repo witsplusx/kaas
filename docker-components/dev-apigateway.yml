@@ -1,0 +1,60 @@
+version: '3'
+
+volumes:
+  mongo_data:
+  cassandra_data:
+
+services:
+  #out baksvr api gateway
+  witsdev-apigw-kong:
+    image: kong:latest
+    depends_on:
+      - witsdev-apigw-cassandra
+    container_name: witsdev-apigw-kong
+    hostname: witsdev-apigw-kong
+    #restart: unless-stopped
+    ports:
+      - 28000:8000
+      - 28443:8443
+      - 28001:8001
+      - 27946:7946
+      - 27946:7946/udp
+    environment:
+      - KONG_DATABASE=cassandra
+      - KONG_CASSANDRA_CONTACT_POINTS=witsdev-apigw-kong-database
+      - KONG_PG_HOST=witsdev-apigw-kong-database
+  witsdev-apigw-konga:
+    image: pantsel/konga:next #(or latest)
+    container_name: witsdev-apigw-konga
+    hostname: witsdev-apigw-konga
+    #restart: unless-stopped
+    depends_on:
+      - witsdev-apigw-kong
+    ports:
+      - 21337:1337
+    links:
+      - witsdev-apigw-mongo:db
+      - witsdev-apigw-kong:kong
+    environment:
+      - DB_ADAPTER=mongo
+      - DB_HOST=witsdev-apigw-mongo
+      - DB_DATABASE=konga
+      - NODE_ENV=development
+  witsdev-apigw-mongo:
+    image: mongo
+    container_name: witsdev-apigw-mongo
+    hostname: witsdev-apigw-mongo
+    #restart: unless-stopped
+    volumes:
+      - mongo_data:/data/db
+    ports:
+      - 127.0.0.1:27017:27017
+  witsdev-apigw-cassandra:
+    image: cassandra:3
+    container_name: witsdev-apigw-kong-database
+    hostname: witsdev-apigw-kong-database
+    #restart: unless-stopped
+    volumes:
+      - cassandra_data:/var/lib/cassandra
+    ports:
+      - 29042:9042

@@ -1,0 +1,77 @@
+version: '3'
+
+services:
+  # redis cluster
+  witsdev-redis-master:
+    image: redis:3.2.11
+    container_name: witsdev-redis-master
+    restart: unless-stopped
+    ports:
+      - "26379:6379"
+
+  witsdev-redis-slave1:
+    image: redis:3.2.11
+    container_name: witsdev-redis-slave1
+    restart: unless-stopped
+    command: redis-server --slaveof redis-master 6379
+    links:
+      - witsdev-redis-master:redis-master
+    #restart: always
+    ports:
+      - "26378:6379"
+
+  witsdev-redis-slave2:
+    image: redis:3.2.11
+    container_name: witsdev-redis-slave2
+    restart: unless-stopped
+    command: redis-server --slaveof redis-master 6379
+    links:
+      - witsdev-redis-master:redis-master
+    #restart: always
+    ports:
+      - "26376:6379"
+
+  witsdev-redis-sentinel1:
+    build: redis/sentinel
+    container_name: witsdev-redis-sentinel1
+    restart: unless-stopped
+    environment:
+      - SENTINEL_DOWN_AFTER=5000
+      - SENTINEL_FAILOVER=5000
+    links:
+      - witsdev-redis-master:redis-master
+      - witsdev-redis-slave1
+      - witsdev-redis-slave2
+    #restart: always
+    ports:
+      - "25376:26379"
+
+  witsdev-redis-sentinel2:
+    build: redis/sentinel
+    container_name: witsdev-redis-sentinel2
+    restart: unless-stopped
+    environment:
+      - SENTINEL_DOWN_AFTER=5000
+      - SENTINEL_FAILOVER=5000
+    links:
+      - witsdev-redis-master:redis-master
+      - witsdev-redis-slave1
+      - witsdev-redis-slave2
+    #restart: always
+    ports:
+      - "25378:26379"
+
+  witsdev-redis-sentinel3:
+    build: redis/sentinel
+    container_name: witsdev-redis-sentinel3
+    restart: unless-stopped
+    environment:
+      - SENTINEL_DOWN_AFTER=5000
+      - SENTINEL_FAILOVER=5000
+    links:
+      - witsdev-redis-master:redis-master
+      - witsdev-redis-slave1
+      - witsdev-redis-slave2
+    #restart: always
+    ports:
+      - "25379:26379"

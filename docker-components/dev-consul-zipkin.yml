@@ -1,0 +1,73 @@
+version: "3.2"
+
+services:
+  consul-1:
+    image: consul:latest
+    command: "consul agent -data-dir=/tmp/data -bootstrap-expect=3 -server -ui -client=0.0.0.0 -disable-host-node-id=true"
+    networks:
+      - consul
+    ports:
+      - "8500:8500"
+      - "8300:8300"
+      - "8301:8301"
+      - "8302:8302"
+    environment:
+      - "CONSUL_CLIENT_INTERFACE=eth0"
+  consul-2:
+    image: consul:latest
+    command: "consul agent -data-dir=/tmp/data -server -retry-join=consul-1 -disable-host-node-id=true"
+    environment:
+      - "CONSUL_CLIENT_INTERFACE=eth0"
+    links:
+      - consul-1
+    networks:
+      - consul
+
+  consul-3:
+    image: consul:latest
+    command: "consul agent -data-dir=/tmp/data -server -retry-join=consul-1 -disable-host-node-id=true"
+    environment:
+      - "CONSUL_CLIENT_INTERFACE=eth0"
+    links:
+      - consul-1
+    networks:
+      - consul
+
+  storage:
+    image: openzipkin/zipkin-mysql
+    container_name: zipkin-mysql
+    # Uncomment to expose the storage port for testing
+    # ports:
+    #   - 3306:3306
+
+  # The zipkin process services the UI, and also exposes a POST endpoint that
+  # instrumentation can send trace data to. Scribe is disabled by default.
+  zipkin:
+    image: openzipkin/zipkin
+    container_name: zipkin
+    # Environment settings are defined here https://github.com/openzipkin/zipkin/tree/1.19.0/zipkin-server#environment-variables
+    environment:
+      - STORAGE_TYPE=mysql
+      # Point the zipkin at the storage backend
+      - MYSQL_HOST=zipkin-mysql
+      # Uncomment to enable scribe
+      # - SCRIBE_ENABLED=true
+      # Uncomment to enable self-tracing
+      # - SELF_TRACING_ENABLED=true
+      # Uncomment to enable debug logging
+      # - JAVA_OPTS=-Dlogging.level.zipkin=DEBUG -Dlogging.level.zipkin2=DEBUG
+    ports:
+      # Port used for the Zipkin UI and HTTP Api
+      - 9411:9411
+      # Uncomment if you set SCRIBE_ENABLED=true
+      # - 9410:9410
+    depends_on:
+      - storage
+
+
+networks:
+  consul:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 192.168.0.0/24

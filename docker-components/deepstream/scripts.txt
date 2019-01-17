@@ -1,0 +1,22 @@
+docker run --name single-rethinkdb -p 28015:28015 -p 8580:8080 -v "$PWD/rethink_data:/data" -d rethinkdb
+
+docker run --name rethinkdb-single -p 28015:28015 -p 8580:8080 -d rethinkdb
+cd /wits/proj-wkspace/wits-projects-plus/wits-plusx/AllDocs/docker-images/deepstream
+docker run --name deepstream-single -p 6020:6020 -p 8585:8080 deepstreamio/deepstream.io:latest
+docker run --name deepstream-single -p 6020:6020 -p 8585:8080 -v $(pwd)/conf:/etc/deepstream deepstreamio/deepstream.io:latest
+docker run --name deepstream-sch-single -e "DEEPSTREAM_HOST=172.17.0.6" -e "DEEPSTREAM_PORT=6020" -e "RETHINKDB_HOST=172.17.0.4" -e "RETHINKDB_PORT=28015" -e "RETHINKDB_DATABASE=deepstream" -d deepstreamio/provider-search-rethinkdb:latest
+
+docker start rethinkdb-single
+docker start redis-single
+docker start deepstream-single
+
+
+
+
+
+
+
+
+docker inspect --format '{{ .NetworkSettings.IPAddress }}' <container-ID>
+或
+docker inspect <container id>

@@ -1,0 +1,13 @@
+#!/usr/bin/with-contenv bash
+
+LDAP_ENABLED=${LDAP_ENABLED:-"FALSE"}
+
+if [ "$LDAP_ENABLED" = "true" ] || [ "$LDAP_ENABLED" = "TRUE" ];  then
+   mkdir -p /usr/share/jicofo/.sip-communicator
+   echo 'org.jitsi.jicofo.auth.URL=XMPP:'$HOST >/usr/share/jicofo/.sip-communicator/sip-communicator.properties
+fi
+
+chown -R jicofo /usr/share/jicofo
+
+mkdir -p /tmp/state/
+touch /tmp/state/10-jicofo-init

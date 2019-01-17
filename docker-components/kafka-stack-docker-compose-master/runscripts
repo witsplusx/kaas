@@ -1,0 +1,22 @@
+cd /wits/proj-wkspace/wits-projects-plus/wits-plusx/AllDocs/docker-images/kafka-stack-docker-compose-master
+docker-compose -f zk-multiple-kafka-multiple.yml up
+docker-compose -f zk-multiple-kafka-multiple.yml down
+
+docker-compose -f zk-multiple-kafka-multiple.yml start
+
+
+docker-compose -f zk-single-kafka-single.yml up -d
+docker-compose -f zk-single-kafka-single.yml down
+
+docker-compose -f zk-single-kafka-single.yml start
+
+
+docker-compose -f full-stack.yml up -d
+docker-compose -f full-stack.yml down
+
+docker-compose -f full-stack.yml start
+
+docker-compose -f full-stack_up.yml up -d
+docker-compose -f full-stack_up.yml down
+
+docker-compose -f full-stack_up.yml start

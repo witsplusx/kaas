@@ -1,0 +1,114 @@
+
+  
+  
+  wget http://emqtt.com/static/brokers/emqttd-docker-v2.3.8.zip
+  unzip emqttd-docker-v2.3.8.zip
+  
+  docker load < emqttd-docker-v2.3.8
+  
+  docker run -tid --name emq-node1 --privileged emqttd-docker-v2.3.8
+  docker run -tid --name emq-node2 --privileged emqttd-docker-v2.3.8
+  docker run -tid --name emq-node3 --privileged emqttd-docker-v2.3.8
+  
+  docker inspect emq-node1
+	IP��ַΪ��        172.17.0.4
+  docker inspect emq-node2				
+	IP��ַΪ��        172.17.0.5
+  docker inspect emq-node3				
+	IP��ַΪ��        172.17.0.6
+	
+  docker exec -it emq-node1 /bin/sh
+  docker exec -it emq-node2 /bin/sh
+  docker exec -it emq-node3 /bin/sh
+  
+  emqttd_ctl status
+  Node 'e6fbc99e1a5c@172.17.0.7' is started
+	emqttd 2.3.8 is running
+
+	bd50357173de@172.17.0.4
+
+	bf4d2c90d11a@172.17.0.5
+
+	89ee2c4ca9b8@172.17.0.6
+
+  	 emqttd_ctl cluster join bd50357173de@172.17.0.4
+	emqttd_ctl cluster join bf4d2c90d11a@172.17.0.5
+	emqttd_ctl cluster join 89ee2c4ca9b8@172.17.0.6
+	
+	docker run -tid --name emq-haproxy --privileged haproxy:lastest
+	docker exec -it emq-haproxy /bin/sh
+	
+	
+	haproxy.cfg�����ļ�
+defaults
+  log                     global
+  option                  dontlognull
+  option http-server-close
+  retries                 3
+  timeout http-request    10s
+  timeout queue           1m
+  timeout connect         10s
+  timeout client          1m
+  timeout server          1m
+  timeout http-keep-alive 10s
+  timeout check           10s
+  timeout tunnel		  3600s
+  timeout client0fin	  30s
+
+frontend emqtt-front
+  bind *:1883
+  mode tcp
+  default_backend emqtt-backend
+
+backend emqtt-backend
+   balance roundrobin
+   server emq-node1 172.17.0.7:8083 check
+   server emq-node2 172.17.0.8:8083 check
+   server emq-node3 172.17.0.9:8083 check
+
+frontend emqtt-ws-front
+  bind *:8083
+  mode tcp
+  default_backend emqtt-ws-backend
+
+
+backend emqtt-ws-backend
+   balance roundrobin
+   server emq-node1 172.17.0.7:8083 check
+   server emq-node2 172.17.0.8:8083 check
+   server emq-node3 172.17.0.9:8083 check   
+
+   
+frontend emqtt-admin-front
+  bind *:18083
+  mode http
+  default_backend emqtt-admin-backend
+
+backend emqtt-admin-backend
+  mode http
+  balance roundrobin
+  server emq-node1 172.17.0.7:18083 check
+  server emq-node2 172.17.0.8:18083 check
+  server emq-node3 172.17.0.9:18083 check
+  
+  
+  
+  touch Dockerfile
+[root@localhost emq-haproxy]# echo FROM haproxy:latest > Dockerfile 
+[root@localhost emq-haproxy]# echo COPY haproxy.cfg /usr/local/etc/haproxy/haproxy.cfg >> Dockerfile 
+[root@localhost emq-haproxy]# docker build -t emqtt-haproxy .
+
+��������ļ�
+docker run -it --rm --name haproxy-syntax-check emqtt-haproxy haproxy -c -f /usr/local/etc/haproxy/haproxy.cfg
+
+docker run -d --privileged --name emqtt-running-haproxy -p 1883:1883 -p 8083:8083 -p 18083:18083 emqtt-haproxy
+
+
+
+docker restart emqtt-running-haproxy
+docker restart emq-node3
+docker restart emq-node2
+docker restart emq-node1
+
+
+

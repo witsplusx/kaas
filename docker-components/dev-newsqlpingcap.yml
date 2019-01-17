@@ -1,0 +1,183 @@
+version: '3'
+
+services:
+  # inner baksvr registry center
+  # zookeeper cluster
+  pingcapdev-pd1:
+    image: pingcap/pd
+    container_name: pingcapdev-pd1
+    hostname: pingcapdev-pd1
+    restart: always
+    expose:
+      - "2379"
+      - "2380"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+    command:
+      - --name=pingcapdev-pd1
+      - --client-urls=http://0.0.0.0:2379
+      - --peer-urls=http://0.0.0.0:2380
+      - --advertise-client-urls=http://pingcapdev-pd1:2379
+      - --advertise-peer-urls=http://pingcapdev-pd1:2380
+      - --initial-cluster=pingcapdev-pd1=http://pingcapdev-pd1:2380,pingcapdev-pd2=http://pingcapdev-pd2:2380,pingcapdev-pd3=http://pingcapdev-pd3:2380
+    privileged: true
+
+  pingcapdev-pd2:
+    image: pingcap/pd
+    container_name: pingcapdev-pd2
+    hostname: pingcapdev-pd2
+    restart: always
+    expose:
+      - "2379"
+      - "2380"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+    command:
+      - --name=pingcapdev-pd2
+      - --client-urls=http://0.0.0.0:2379
+      - --peer-urls=http://0.0.0.0:2380
+      - --advertise-client-urls=http://pingcapdev-pd2:2379
+      - --advertise-peer-urls=http://pingcapdev-pd2:2380
+      - --initial-cluster=pingcapdev-pd1=http://pingcapdev-pd1:2380,pingcapdev-pd2=http://pingcapdev-pd2:2380,pingcapdev-pd3=http://pingcapdev-pd3:2380
+    privileged: true
+
+  pingcapdev-pd3:
+    image: pingcap/pd
+    container_name: pingcapdev-pd3
+    hostname: pingcapdev-pd3
+    restart: always
+    expose:
+      - "2379"
+      - "2380"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+    command:
+      - --name=pingcapdev-pd3
+      - --client-urls=http://0.0.0.0:2379
+      - --peer-urls=http://0.0.0.0:2380
+      - --advertise-client-urls=http://pingcapdev-pd3:2379
+      - --advertise-peer-urls=http://pingcapdev-pd3:2380
+      - --initial-cluster=pingcapdev-pd1=http://pingcapdev-pd1:2380,pingcapdev-pd2=http://pingcapdev-pd2:2380,pingcapdev-pd3=http://pingcapdev-pd3:2380
+    privileged: true
+
+  pingcapdev-tikv1:
+    image: pingcap/tikv
+    container_name: pingcapdev-tikv1
+    hostname: pingcapdev-tikv1
+    restart: always
+    expose:
+      - "20160"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+    restart: always
+    command:
+      - --addr=0.0.0.0:20160
+      - --advertise-addr=pingcapdev-tikv1:20160
+      - --data-dir=/var/tikv
+      - --pd=pingcapdev-pd1:2379,pingcapdev-pd2:2379,pingcapdev-pd3:2379
+    depends_on:
+      - "pingcapdev-pd1"
+      - "pingcapdev-pd2"
+      - "pingcapdev-pd3"
+    entrypoint: /tikv-server
+    privileged: true
+
+  pingcapdev-tikv2:
+    image: pingcap/tikv
+    container_name: pingcapdev-tikv2
+    hostname: pingcapdev-tikv2
+    restart: always
+    expose:
+      - "20160"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+    command:
+      - --addr=0.0.0.0:20160
+      - --advertise-addr=pingcapdev-tikv2:20160
+      - --data-dir=/var/tikv
+      - --pd=pingcapdev-pd1:2379,pingcapdev-pd2:2379,pingcapdev-pd3:2379
+    depends_on:
+      - "pingcapdev-pd1"
+      - "pingcapdev-pd2"
+      - "pingcapdev-pd3"
+    entrypoint: /tikv-server
+    privileged: true
+
+  pingcapdev-tikv3:
+    image: pingcap/tikv
+    container_name: pingcapdev-tikv3
+    hostname: pingcapdev-tikv3
+    restart: always
+    expose:
+      - "20160"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+    command:
+      - --addr=0.0.0.0:20160
+      - --advertise-addr=pingcapdev-tikv3:20160
+      - --data-dir=/var/tikv
+      - --pd=pingcapdev-pd1:2379,pingcapdev-pd2:2379,pingcapdev-pd3:2379
+    depends_on:
+      - "pingcapdev-pd1"
+      - "pingcapdev-pd2"
+      - "pingcapdev-pd3"
+    entrypoint: /tikv-server
+    privileged: true
+
+  pingcapdev-tidb1:
+    image: pingcap/tidb
+    container_name: pingcapdev-tidb1
+    hostname: pingcapdev-tidb1
+    restart: always
+    ports:
+      - "21888:4000"
+      - "21886:10080"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+    command:
+      - --store=tikv
+      - --path=pingcapdev-pd1:2379,pingcapdev-pd2:2379,pingcapdev-pd3:2379
+      - -L=warn
+    depends_on:
+      - "pingcapdev-tikv1"
+      - "pingcapdev-tikv2"
+      - "pingcapdev-tikv3"
+    privileged: true
+
+  pingcapdev-tidb2:
+    image: pingcap/tidb
+    container_name: pingcapdev-tidb2
+    hostname: pingcapdev-tidb2
+    restart: always
+    ports:
+      - "22888:4000"
+      - "22886:10080"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+    command:
+      - --store=tikv
+      - --path=pingcapdev-pd1:2379,pingcapdev-pd2:2379,pingcapdev-pd3:2379
+      - -L=warn
+    depends_on:
+      - "pingcapdev-tikv1"
+      - "pingcapdev-tikv2"
+      - "pingcapdev-tikv3"
+    privileged: true
+
+  pingcapdev-haproxy:
+    image: haproxy:latest
+    hostname: pingcapdev-haproxy
+    volumes:
+      - ./haproxy:/haproxy-override
+      - ./haproxy/haproxy-pingcap.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
+    restart: always
+    links:
+      - pingcapdev-tidb1
+      - pingcapdev-tidb2
+    ports:
+      - "22880:12880"
+      - "23306:3306"
+    expose:
+      - "12880"
+      - "3306"
+    privileged: true

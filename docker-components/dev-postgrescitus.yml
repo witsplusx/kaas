@@ -1,0 +1,26 @@
+version: '2.1'
+
+services:
+  master:
+    container_name: "${COMPOSE_PROJECT_NAME:-witsdev-citus}_master1"
+    image: 'citusdata/citus:7.2.1'
+    ports: ["${MASTER_EXTERNAL_PORT:-25432}:5432"]
+    labels: ['com.citusdata.role=Master']
+    restart: always
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+
+  witsdev-citus-worker:
+    image: 'citusdata/citus:7.2.1'
+    labels: ['com.citusdata.role=Worker']
+    depends_on: { witsdev-citus-manager: { condition: service_healthy } }
+    restart: always
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+
+  witsdev-citus-manager:
+    container_name: "${COMPOSE_PROJECT_NAME:-witsdev-citus}_manager1"
+    image: 'citusdata/membership-manager:0.2.0'
+    depends_on: { master: { condition: service_healthy } }
+    restart: always
+    volumes: ['/var/run/docker.sock:/var/run/docker.sock']
