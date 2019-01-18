@@ -10,5 +10,15 @@ docker-compose -f ./docker-compose.yml -p wits-glbidgen-mysql up -d
 
 docker-compose -f ./docker-compose.yml -p wits-glbidgen-mysql start
 docker-compose -f ./docker-compose.yml -p wits-glbidgen-mysql stop
+docker-compose -f ./docker-compose.yml -p wits-glbidgen-mysql restart
+
 docker-compose -f ./docker-compose.yml -p wits-glbidgen-mysql down
 
+业务表构建脚本
+
+CREATE TABLE SEQ_COMMON (
+      id bigint(20) unsigned NOT NULL auto_increment,
+      stub char(1) NOT NULL default '',
+      PRIMARY KEY (id),
+      UNIQUE KEY stub (stub)
+  ) ENGINE=MyISAM;

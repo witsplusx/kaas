@@ -1,0 +1,6 @@
+docker images  filemon/oracle_11g
+
+docker run -d --name oracle-single -p 1521:1521 filemon/oracle_11g
+
+
+

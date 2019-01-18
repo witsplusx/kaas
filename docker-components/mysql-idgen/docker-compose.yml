@@ -31,7 +31,7 @@ services:
     container_name: mysql-node3
     image: mysql:5.7.24
     volumes:
-      - ./node2.cnf:/etc/mysql/conf.d/my.cnf
+      - ./node3.cnf:/etc/mysql/conf.d/my.cnf
     environment:
       - MYSQL_ROOT_PASSWORD=wits
       - MYSQL_DATABASE=wits_plusx_db
